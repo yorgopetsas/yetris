@@ -124,7 +124,10 @@ fun main() {
         render()
     }
 
-    window.onbeforeunload = { scope.cancel() }
+    window.onbeforeunload = {
+        scope.cancel()
+        null
+    }
 
     render()
     engine.start(scope)
