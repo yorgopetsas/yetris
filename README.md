@@ -157,11 +157,11 @@ Typical debug APK output:
 | **GitHub Actions artifacts** (this repo) | You want a fresh **debug APK** built on each push to `main`; users download the zip from the Actions tab. |
 | **GitHub Releases** | You tag a version and attach a **release APK** (often signed) for “official” downloads. |
 
-This repository includes [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml): on pushes to **`main`** that touch `android/`, it runs **`assembleDebug`** (artifact **`app-debug-apk`**) and builds/deploys the **web preview** to **GitHub Pages** in the **same** workflow run.
+This repository includes [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml): on pushes to **`main`** that touch `android/`, it runs **`assembleDebug`** and uploads **`app-debug-apk`**. The **browser preview** is optional and uses a **separate** workflow ([`.github/workflows/web-pages.yml`](.github/workflows/web-pages.yml)) so pushes are not blocked by Kotlin/JS + webpack + Pages.
 
 **How to download the APK**
 
-1. Open the repo on GitHub → **Actions** → select **Android build** → latest successful run.  
+1. Open the repo on GitHub → **Actions** → select **Android CI** → latest successful run.  
 2. Under **Artifacts**, download **`app-debug-apk`** (zip containing `app-debug.apk`).  
 3. Copy the APK to your phone and install (you may need to allow install from unknown sources for that file manager).
 
@@ -169,12 +169,12 @@ Debug builds are convenient for testing; for public distribution you typically a
 
 ### Web preview (GitHub Pages)
 
-Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. The **JS target** uses the same engine as Android; the Pages deploy is handled by [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) (`build-web` + `deploy-pages` jobs).
+Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. The **JS target** uses the same engine as Android. To **publish** the web build to GitHub Pages, run [**Web preview (GitHub Pages)**](.github/workflows/web-pages.yml) manually: **Actions** → **Web preview (GitHub Pages)** → **Run workflow**.
 
 **One-time setup (repository owner)**
 
 1. GitHub repo → **Settings** → **Pages** → **Build and deployment** → **Source**: **GitHub Actions** (not “Deploy from a branch”).  
-2. Push to `main` (or run the workflow manually under **Actions** → **Android CI** → **Run workflow**).  
+2. Run **Web preview (GitHub Pages)** from the Actions tab when you want to refresh the site (not tied to every push).  
 3. After a green run, open the site at **`https://<user>.github.io/<repo>/`** (for this fork: **`https://yorgopetsas.github.io/yetris/`** if the repo name stays `yetris`).
 
 Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` — webpack dev server with the same `index.html` under `shared/src/jsMain/resources/`.

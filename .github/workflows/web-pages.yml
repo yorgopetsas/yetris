@@ -1,24 +1,18 @@
-# Automatic CI: debug APK only. Keeps pushes green without Kotlin/JS + webpack + Pages on every commit.
-# Web preview: run `.github/workflows/web-pages.yml` manually in Actions when you want to refresh GitHub Pages.
-name: Android CI
+# Optional: publish browser preview to GitHub Pages. Does NOT run on every push — start it manually.
+# Actions → Web preview (GitHub Pages) → Run workflow.
+# Repo Settings → Pages → Source: GitHub Actions.
+name: Web preview (GitHub Pages)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'android/**'
-      - '.github/workflows/android-ci.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: android-ci-${{ github.ref }}
-  cancel-in-progress: true
+  pages: write
+  id-token: write
 
 jobs:
-  assemble-debug:
+  build-web:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,7 +34,6 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # :shared includes a JS target; with kotlin.js.nodejs.download=false Gradle expects `node` on PATH during configuration.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -52,13 +45,22 @@ jobs:
           packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
           log-accepted-android-sdk-licenses: false
 
-      - name: Gradle assembleDebug
+      - name: Gradle jsBrowserProductionWebpack
         working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
+        run: chmod +x gradlew && ./gradlew :shared:jsBrowserProductionWebpack --no-daemon --stacktrace
 
-      - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: app-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+          path: android/shared/build/dist/js/productionExecutable
+
+  deploy-pages:
+    needs: build-web
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
