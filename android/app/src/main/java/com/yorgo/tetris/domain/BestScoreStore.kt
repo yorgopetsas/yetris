@@ -1,16 +1,8 @@
 package com.yorgo.tetris.domain
 
+/** Persists personal best score and optional display name (device-local). */
 interface BestScoreStore {
     fun readBestScore(): Int
-    fun writeBestScore(score: Int)
-}
-
-class InMemoryBestScoreStore : BestScoreStore {
-    private var best = 0
-
-    override fun readBestScore(): Int = best
-
-    override fun writeBestScore(score: Int) {
-        if (score > best) best = score
-    }
+    fun readBestPlayerName(): String
+    fun writeBest(score: Int, playerName: String)
 }

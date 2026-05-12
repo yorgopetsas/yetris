@@ -15,3 +15,6 @@ Thumbs.db
 # Logs / env
 *.log
 .env*
+
+# Android local SDK path (machine-specific)
+android/local.properties

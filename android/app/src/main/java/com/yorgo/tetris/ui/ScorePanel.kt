@@ -9,10 +9,16 @@ import androidx.compose.ui.Modifier
 fun ScorePanel(
     score: Int,
     best: Int,
+    bestPlayerName: String,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         Text("Score: $score")
-        Text("Best: $best")
+        val bestLine = if (bestPlayerName.isNotBlank()) {
+            "Best: $bestPlayerName — $best"
+        } else {
+            "Best: $best"
+        }
+        Text(bestLine)
     }
 }

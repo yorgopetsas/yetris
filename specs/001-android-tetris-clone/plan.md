@@ -64,3 +64,11 @@ android/
 ## Complexity Tracking
 
 No constitution violations currently defined; no complexity exemptions required.
+
+## Recent implementation alignment
+
+Aligned with feature updates:
+
+- **Controls**: single full-width row — Move Left at start edge, Move Right at end edge, Rotate and Soft Drop centered between them (`ControlsPanel`).
+- **Personal best**: `SharedPreferences`-backed store for score + optional display name; name captured when a run beats the stored best (`SharedPreferencesBestScoreStore`, `GameOverDialog`).
+- **Piece RNG**: 7-bag randomizer with per-session shuffle (`PieceGenerator.resetSession` from each new game/restart).

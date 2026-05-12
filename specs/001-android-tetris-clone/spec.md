@@ -62,6 +62,32 @@ As the player, I can restart immediately after game over so I can do repeated qu
 - What happens if the app is interrupted (for example minimized or phone screen turned off) during an active session?
 - How does the system behave when the player tries to rotate a piece against a wall or stacked blocks?
 
+### User Story 4 - Controls layout on phone (Priority: P2)
+
+As the player, I want clearly separated controls so left/right sit at the screen edges and rotate/drop sit centered for comfortable thumb reach.
+
+**Independent Test**: Open game controls strip and verify positions match layout rules without overlapping the board incorrectly.
+
+**Acceptance Scenarios**:
+
+1. **Given** gameplay controls are visible, **When** the player views the control row, **Then** Move Left is aligned toward the start edge and Move Right toward the end edge of the row.
+2. **Given** gameplay controls are visible, **When** the player views the center region, **Then** Rotate and Drop appear grouped and horizontally centered between the outer buttons.
+
+---
+
+### User Story 5 - Persistent best score and optional name (Priority: P2)
+
+As the player, I want my best score to persist across app restarts and optionally record my name when I beat my previous best.
+
+**Independent Test**: Achieve a high score, restart the device or force-close the app, reopen and confirm best score and label remain.
+
+**Acceptance Scenarios**:
+
+1. **Given** the stored best score exists, **When** the player launches the app after a long idle period or cold start, **Then** the best score (and associated display name if saved) still appears.
+2. **Given** game over occurs with a score strictly greater than the stored best, **When** the player completes the end-game prompt, **Then** they may enter a short display name and the new best is saved locally.
+
+---
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
@@ -78,6 +104,10 @@ As the player, I can restart immediately after game over so I can do repeated qu
 - **FR-010**: The system MUST provide a restart action that begins a new session from a clean initial state after game over.
 - **FR-011**: The system MUST support interaction via Android touch controls appropriate for move, rotate, and drop actions.
 - **FR-012**: The system MUST run as a standalone personal-use mobile app and does not require user accounts, sharing, or online multiplayer features.
+- **FR-013**: The system MUST lay out primary gameplay controls in one row such that Move Left is toward the screen start edge, Move Right toward the screen end edge, and Rotate with Soft Drop grouped and visually centered between them.
+- **FR-014**: The system MUST persist the personal best score on device storage so it survives process death and long idle periods.
+- **FR-015**: When a session ends with a score strictly greater than the stored best, the system MUST offer entry of a short display name (trimmed, length-limited) before treating the new score as the recorded best.
+- **FR-016**: The piece sequence SHALL use a guideline-style **7-bag** randomizer with **per-session** shuffling; it MUST NOT rely on a fixed global random seed across app launches.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -85,6 +115,7 @@ As the player, I can restart immediately after game over so I can do repeated qu
 - **Game Board**: A fixed-size grid that stores occupied and empty cells and is used to determine collisions and line completion.
 - **Piece**: A falling shape with type, orientation, and position that can be moved/rotated until locked.
 - **Score Record**: Numeric value representing player performance for the current session based on cleared lines.
+- **Personal Best Record**: Locally persisted best score paired with an optional display name for presentation on the score panel.
 
 ## Success Criteria *(mandatory)*
 

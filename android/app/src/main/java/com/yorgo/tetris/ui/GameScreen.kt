@@ -40,7 +40,11 @@ fun GameScreen(vm: GameViewModel = viewModel()) {
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ScorePanel(score = state.score, best = state.bestScore)
+        ScorePanel(
+            score = state.score,
+            best = state.bestScore,
+            bestPlayerName = state.bestPlayerName
+        )
         if (state.activeCells.isEmpty() && state.status == SessionStatus.READY) {
             Button(onClick = { vm.onAction(InputActionType.START) }) {
                 Text("Start Game")
@@ -54,7 +58,12 @@ fun GameScreen(vm: GameViewModel = viewModel()) {
         )
         ControlsPanel { vm.onAction(it) }
         if (state.status == SessionStatus.GAME_OVER) {
-            GameOverDialog(score = state.score) { vm.onAction(InputActionType.RESTART) }
+            GameOverDialog(
+                score = state.score,
+                needsNameEntry = state.gameOverNeedsNameEntry,
+                onSaveHighScoreAndRestart = { vm.onSaveHighScoreAndRestart(it) },
+                onRestart = { vm.onAction(InputActionType.RESTART) }
+            )
         }
     }
 }

@@ -1,9 +1,10 @@
 package com.yorgo.tetris.ui
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.yorgo.tetris.data.SharedPreferencesBestScoreStore
 import com.yorgo.tetris.domain.BestScoreStore
-import com.yorgo.tetris.domain.InMemoryBestScoreStore
 import com.yorgo.tetris.domain.InputActionType
 import com.yorgo.tetris.domain.SessionStatus
 import com.yorgo.tetris.game.GameEngine
@@ -15,15 +16,25 @@ data class UiState(
     val status: SessionStatus = SessionStatus.READY,
     val score: Int = 0,
     val bestScore: Int = 0,
+    val bestPlayerName: String = "",
     val board: List<List<Boolean>> = emptyList(),
-    val activeCells: List<Pair<Int, Int>> = emptyList()
+    val activeCells: List<Pair<Int, Int>> = emptyList(),
+    /** True when game over and run beats stored best — show name entry before saving. */
+    val gameOverNeedsNameEntry: Boolean = false
 )
 
-class GameViewModel(
+class GameViewModel @JvmOverloads constructor(
+    application: Application,
     private val engine: GameEngine = GameEngine(),
-    private val bestScoreStore: BestScoreStore = InMemoryBestScoreStore()
-) : ViewModel() {
-    private val _ui = MutableStateFlow(UiState(bestScore = bestScoreStore.readBestScore()))
+    private val bestScoreStore: BestScoreStore = SharedPreferencesBestScoreStore(application)
+) : AndroidViewModel(application) {
+
+    private val _ui = MutableStateFlow(
+        UiState(
+            bestScore = bestScoreStore.readBestScore(),
+            bestPlayerName = bestScoreStore.readBestPlayerName()
+        )
+    )
     val ui: StateFlow<UiState> = _ui.asStateFlow()
 
     init {
@@ -43,11 +54,23 @@ class GameViewModel(
         engine.dispatch(action)
     }
 
+    /** Called when the player confirms name (or empty → Anonymous) after a new personal best. */
+    fun onSaveHighScoreAndRestart(name: String) {
+        val session = engine.session
+        val trimmed = name.trim().take(SharedPreferencesBestScoreStore.MAX_NAME_LEN)
+            .ifEmpty { "Anonymous" }
+        if (session.status == SessionStatus.GAME_OVER && session.score > bestScoreStore.readBestScore()) {
+            bestScoreStore.writeBest(session.score, trimmed)
+        }
+        engine.dispatch(InputActionType.RESTART)
+        publish()
+    }
+
     private fun publish() {
         val session = engine.session
-        if (session.status == SessionStatus.GAME_OVER) {
-            bestScoreStore.writeBestScore(session.score)
-        }
+        val prevBest = bestScoreStore.readBestScore()
+        val needsName =
+            session.status == SessionStatus.GAME_OVER && session.score > prevBest
         val cells = session.activePiece?.let { piece ->
             com.yorgo.tetris.game.CollisionRules.occupiedCells(piece).map { it.x to it.y }
         } ?: emptyList()
@@ -55,8 +78,10 @@ class GameViewModel(
             status = session.status,
             score = session.score,
             bestScore = bestScoreStore.readBestScore(),
+            bestPlayerName = bestScoreStore.readBestPlayerName(),
             board = session.board.cells,
-            activeCells = cells
+            activeCells = cells,
+            gameOverNeedsNameEntry = needsName
         )
     }
 

@@ -48,20 +48,22 @@
   - Actions ignored when incompatible with current session status (for example move while game-over).
   - `RESTART` creates a fresh `GameSession` and clears prior board state.
 
-## Entity: ScoreEntry (Optional Persistence)
-- **Purpose**: Stores best-score value on device for personal tracking.
+## Entity: Personal Best Record (Persisted)
+- **Purpose**: Stores the player’s best score and optional display name on device storage so it survives app restarts.
 - **Fields**:
   - `bestScore` (integer): Highest score achieved.
-  - `updatedAt` (timestamp): Time best score last changed.
+  - `playerName` (string): Display name associated with the best score (may be empty before first named record).
+  - `updatedAt` (timestamp, optional): Time best score last changed.
 - **Validation Rules**:
   - `bestScore >= 0`
-  - Update only when current session score exceeds stored best score.
+  - `playerName` trimmed to a maximum length (implementation-defined, e.g. 24 characters).
+  - Update best score and name only when a completed session records a score strictly greater than stored `bestScore`.
 
 ## Relationships
 - A `GameSession` contains one `GameBoard`.
 - A `GameSession` has zero or one `ActivePiece` at any given moment.
 - A `GameSession` processes many `InputAction` events over time.
-- A `ScoreEntry` is global to the app and updated based on completed `GameSession` results.
+- A `Personal Best Record` is global to the app and updated based on completed `GameSession` results when the score beats the prior best.
 
 ## State Transitions
 - **Session status**:

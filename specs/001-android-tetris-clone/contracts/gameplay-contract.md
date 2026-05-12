@@ -36,6 +36,15 @@ Define the expected behavior contract between input handling, game engine update
 - Score updates MUST happen only through defined scoring events (line clears and any explicitly defined bonuses).
 - Score progression MUST be deterministic and reproducible for the same gameplay event sequence.
 
+## Personal Best Contract
+- The system MUST persist the highest achieved score locally across launches.
+- When a session ends with a score greater than the stored best, the player MUST be able to submit a short display name before the new best is recorded (or an equivalent default label if skipped).
+- The score panel MUST surface both stored best score and stored display name when available.
+
+## Piece Sequence Contract
+- Tetromino draws MUST follow a 7-bag randomizer: each bag contains exactly one of each piece type; the bag is shuffled using per-session entropy and drawn until empty before refilling.
+- Piece sequence MUST NOT depend on a fixed global seed identical on every cold app launch.
+
 ## Rendering Contract
 - UI MUST reflect the latest committed engine state after each processed tick or input action.
 - Restart MUST render a new clean board before gameplay continues.
