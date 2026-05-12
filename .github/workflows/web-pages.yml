@@ -49,10 +49,15 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew :shared:jsBrowserProductionWebpack --no-daemon --stacktrace
 
+      - name: Verify webpack output
+        run: |
+          ls -la android/shared/build/dist/pages
+          test -f android/shared/build/dist/pages/yetris.js
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: android/shared/build/dist/js/productionExecutable
+          path: android/shared/build/dist/pages
 
   deploy-pages:
     needs: build-web
