@@ -1,13 +1,13 @@
-# Builds Kotlin/JS from :shared and deploys static files to GitHub Pages.
-# Repo Settings → Pages → Build and deployment → Source: GitHub Actions.
-name: Deploy web preview (GitHub Pages)
+# Single workflow: debug APK artifact + Kotlin/JS web build + GitHub Pages deploy.
+# Repo Settings → Pages → Source: GitHub Actions.
+name: Android CI
 
 on:
   push:
     branches: [main]
     paths:
-      - 'android/shared/**'
-      - '.github/workflows/deploy-pages.yml'
+      - 'android/**'
+      - '.github/workflows/android-ci.yml'
   workflow_dispatch:
 
 permissions:
@@ -16,11 +16,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  assemble-debug:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,7 +42,45 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # :shared is an Android library target; Gradle still needs the SDK to configure the project.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
+
+      - name: Gradle assembleDebug
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
@@ -58,8 +96,8 @@ jobs:
         with:
           path: android/shared/build/dist/js/productionExecutable
 
-  deploy:
-    needs: build
+  deploy-pages:
+    needs: build-web
     runs-on: ubuntu-latest
     environment:
       name: github-pages

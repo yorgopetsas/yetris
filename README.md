@@ -157,7 +157,7 @@ Typical debug APK output:
 | **GitHub Actions artifacts** (this repo) | You want a fresh **debug APK** built on each push to `main`; users download the zip from the Actions tab. |
 | **GitHub Releases** | You tag a version and attach a **release APK** (often signed) for “official” downloads. |
 
-This repository includes [`.github/workflows/android-build.yml`](.github/workflows/android-build.yml): it runs `./gradlew assembleDebug` on pushes that touch `android/` and uploads **`app-debug.apk`** as a workflow artifact named **`app-debug-apk`**.
+This repository includes [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml): on pushes to **`main`** that touch `android/`, it runs **`assembleDebug`** (artifact **`app-debug-apk`**) and builds/deploys the **web preview** to **GitHub Pages** in the **same** workflow run.
 
 **How to download the APK**
 
@@ -169,12 +169,12 @@ Debug builds are convenient for testing; for public distribution you typically a
 
 ### Web preview (GitHub Pages)
 
-Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. The **JS target** uses the same engine as Android; [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) runs `./gradlew :shared:jsBrowserProductionWebpack` on pushes to **`main`** that touch `android/shared/` and publishes the webpack output to **GitHub Pages**.
+Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. The **JS target** uses the same engine as Android; the Pages deploy is handled by [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) (`build-web` + `deploy-pages` jobs).
 
 **One-time setup (repository owner)**
 
 1. GitHub repo → **Settings** → **Pages** → **Build and deployment** → **Source**: **GitHub Actions** (not “Deploy from a branch”).  
-2. Push to `main` (or run the workflow manually under **Actions** → **Deploy web preview** → **Run workflow**).  
+2. Push to `main` (or run the workflow manually under **Actions** → **Android CI** → **Run workflow**).  
 3. After a green run, open the site at **`https://<user>.github.io/<repo>/`** (for this fork: **`https://yorgopetsas.github.io/yetris/`** if the repo name stays `yetris`).
 
 Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` — webpack dev server with the same `index.html` under `shared/src/jsMain/resources/`.
