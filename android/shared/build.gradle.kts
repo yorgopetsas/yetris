@@ -26,10 +26,6 @@ kotlin {
     }
     js(IR) {
         browser {
-            // Stable folder for CI/GitHub Pages (default varies by KGP version).
-            distribution {
-                outputDirectory.set(layout.buildDirectory.dir("dist/pages"))
-            }
             commonWebpackConfig {
                 outputFileName = "yetris.js"
             }

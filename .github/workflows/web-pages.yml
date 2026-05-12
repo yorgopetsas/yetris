@@ -49,15 +49,34 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew :shared:jsBrowserProductionWebpack --no-daemon --stacktrace
 
-      - name: Verify webpack output
+      # KGP may write to dist/pages, dist/js/productionExecutable, or elsewhere — do not hardcode one path.
+      - name: Locate webpack output for Pages
+        id: site
         run: |
-          ls -la android/shared/build/dist/pages
-          test -f android/shared/build/dist/pages/yetris.js
+          set -euo pipefail
+          cd "${GITHUB_WORKSPACE}"
+          for d in android/shared/build/dist/pages android/shared/build/dist/js/productionExecutable; do
+            if [ -f "$d/yetris.js" ]; then
+              echo "pages_path=$d" >> "$GITHUB_OUTPUT"
+              echo "Found bundle at $d"; ls -la "$d"
+              exit 0
+            fi
+          done
+          HIT=$(find android/shared/build -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null | head -1 || true)
+          if [ -z "$HIT" ]; then
+            echo "yetris.js not found. Tree under android/shared/build:"
+            find android/shared/build -type d 2>/dev/null | head -60 || true
+            find android/shared/build -type f -name '*.html' 2>/dev/null | head -20 || true
+            exit 1
+          fi
+          SITE=$(dirname "$HIT")
+          echo "pages_path=$SITE" >> "$GITHUB_OUTPUT"
+          echo "Found bundle at $SITE"; ls -la "$SITE"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: android/shared/build/dist/pages
+          path: ${{ steps.site.outputs.pages_path }}
 
   deploy-pages:
     needs: build-web
