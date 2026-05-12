@@ -17,7 +17,8 @@ plugins {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    // PREFER_SETTINGS: Kotlin/JS adds an Ivy repo for Node (nodejs.org/dist); FAIL_ON_PROJECT_REPOS breaks :shared.
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
