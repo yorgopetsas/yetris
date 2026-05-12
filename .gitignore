@@ -5,6 +5,8 @@ out/
 *.iml
 *.class
 *.jar
+# Gradle wrapper must be committed so CI can run ./gradlew
+!**/gradle-wrapper.jar
 
 # IDE / OS
 .idea/
