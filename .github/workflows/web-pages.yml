@@ -49,12 +49,13 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew :shared:jsBrowserProductionWebpack --no-daemon --stacktrace
 
-      # KGP may write to dist/pages, dist/js/productionExecutable, or elsewhere — do not hardcode one path.
+      # Webpack output path varies by KGP version; search the whole android tree (not only shared/build).
       - name: Locate webpack output for Pages
         id: site
         run: |
           set -euo pipefail
           cd "${GITHUB_WORKSPACE}"
+          echo "Workflow ref: ${GITHUB_SHA}"
           for d in android/shared/build/dist/pages android/shared/build/dist/js/productionExecutable; do
             if [ -f "$d/yetris.js" ]; then
               echo "pages_path=$d" >> "$GITHUB_OUTPUT"
@@ -62,16 +63,19 @@ jobs:
               exit 0
             fi
           done
-          HIT=$(find android/shared/build -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null | head -1 || true)
+          echo "Searching android/ for yetris.js …"
+          find android -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null | head -20 || true
+          HIT=$(find android -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null | head -1 || true)
           if [ -z "$HIT" ]; then
-            echo "yetris.js not found. Tree under android/shared/build:"
-            find android/shared/build -type d 2>/dev/null | head -60 || true
-            find android/shared/build -type f -name '*.html' 2>/dev/null | head -20 || true
+            echo "yetris.js not found under android/. Sample dirs:"
+            find android/shared/build -type d 2>/dev/null | head -40 || true
+            find android -type f -name '*.html' 2>/dev/null | grep -v node_modules | head -20 || true
             exit 1
           fi
           SITE=$(dirname "$HIT")
           echo "pages_path=$SITE" >> "$GITHUB_OUTPUT"
-          echo "Found bundle at $SITE"; ls -la "$SITE"
+          echo "Using bundle directory: $SITE"
+          ls -la "$SITE"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

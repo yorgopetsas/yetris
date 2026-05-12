@@ -177,6 +177,10 @@ Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. Th
 2. Run **Web preview (GitHub Pages)** from the Actions tab when you want to refresh the site (not tied to every push).  
 3. After a green run, open the site at **`https://<user>.github.io/<repo>/`** (for this fork: **`https://yorgopetsas.github.io/yetris/`** if the repo name stays `yetris`).
 
+**If Actions shows `ls … dist/pages`:** that log is from an **older** workflow file. On **`main`**, open [`.github/workflows/web-pages.yml`](.github/workflows/web-pages.yml) on GitHub and confirm it contains the step **“Locate webpack output for Pages”** (not a bare `ls` on `dist/pages`). If the old step is still there, **`main` on GitHub is behind** — push or merge the latest commits from this repo.
+
+**`android/shared/build/` on GitHub:** you will **not** see it in the file browser; **`build/` is gitignored**. It only exists on **runners** during Actions and on your PC **after** a successful Gradle web build.
+
 Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` — webpack dev server with the same `index.html` under `shared/src/jsMain/resources/`.
 
 ---
