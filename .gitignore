@@ -1,0 +1,17 @@
+# Kotlin / Android
+.gradle/
+build/
+out/
+*.iml
+*.class
+*.jar
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs / env
+*.log
+.env*

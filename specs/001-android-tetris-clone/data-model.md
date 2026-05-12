@@ -1,0 +1,74 @@
+# Data Model: Android Tetris Clone
+
+## Entity: GameSession
+- **Purpose**: Represents one complete play run from start to game-over.
+- **Fields**:
+  - `sessionId` (string): Unique identifier for the run.
+  - `status` (enum): `READY`, `RUNNING`, `PAUSED`, `GAME_OVER`.
+  - `score` (integer): Current score (non-negative).
+  - `linesCleared` (integer): Total lines cleared in this session.
+  - `level` (integer): Current speed/level progression value.
+  - `startedAt` (timestamp): Session start time.
+  - `endedAt` (timestamp, nullable): Session end time when game-over occurs.
+- **Validation Rules**:
+  - `score >= 0`
+  - `linesCleared >= 0`
+  - `level >= 1`
+  - `endedAt` must exist only when status is `GAME_OVER`.
+
+## Entity: GameBoard
+- **Purpose**: Grid representing occupied/empty playfield cells.
+- **Fields**:
+  - `width` (integer): Board width in cells.
+  - `height` (integer): Board height in cells.
+  - `cells` (matrix of cell state): Each cell is empty or occupied by a piece block.
+- **Validation Rules**:
+  - Dimensions are fixed during a session.
+  - Cell coordinates must remain inside board boundaries.
+  - Locking a piece cannot overwrite occupied cells.
+
+## Entity: ActivePiece
+- **Purpose**: Current falling piece controlled by the player.
+- **Fields**:
+  - `pieceType` (enum): One of the supported classic piece shapes.
+  - `rotation` (enum/integer): Current orientation state.
+  - `originX` (integer): Horizontal position on board.
+  - `originY` (integer): Vertical position on board.
+  - `blockOffsets` (list of coordinate offsets): Shape definition relative to origin.
+- **Validation Rules**:
+  - All transformed block coordinates must be valid board positions or trigger collision rejection.
+  - Rotation/movement is applied only if resulting placement is valid.
+
+## Entity: InputAction
+- **Purpose**: Captures player actions affecting the current game state.
+- **Fields**:
+  - `actionType` (enum): `MOVE_LEFT`, `MOVE_RIGHT`, `ROTATE`, `SOFT_DROP`, `RESTART`, `PAUSE`, `RESUME`.
+  - `issuedAtTick` (integer): Tick index when action was processed.
+- **Validation Rules**:
+  - Actions ignored when incompatible with current session status (for example move while game-over).
+  - `RESTART` creates a fresh `GameSession` and clears prior board state.
+
+## Entity: ScoreEntry (Optional Persistence)
+- **Purpose**: Stores best-score value on device for personal tracking.
+- **Fields**:
+  - `bestScore` (integer): Highest score achieved.
+  - `updatedAt` (timestamp): Time best score last changed.
+- **Validation Rules**:
+  - `bestScore >= 0`
+  - Update only when current session score exceeds stored best score.
+
+## Relationships
+- A `GameSession` contains one `GameBoard`.
+- A `GameSession` has zero or one `ActivePiece` at any given moment.
+- A `GameSession` processes many `InputAction` events over time.
+- A `ScoreEntry` is global to the app and updated based on completed `GameSession` results.
+
+## State Transitions
+- **Session status**:
+  - `READY -> RUNNING` on game start.
+  - `RUNNING -> PAUSED` on app interruption or pause action.
+  - `PAUSED -> RUNNING` on resume.
+  - `RUNNING -> GAME_OVER` when next piece spawn is invalid.
+  - `GAME_OVER -> RUNNING` on restart (new session instance).
+- **Piece lifecycle**:
+  - `SPAWNED -> FALLING -> LOCKED -> CLEARED/SETTLED -> NEXT_SPAWN`.
