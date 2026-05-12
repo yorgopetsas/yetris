@@ -32,6 +32,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # :shared is an Android library target; Gradle still needs the SDK to configure the project.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
+
       - name: Gradle jsBrowserProductionWebpack
         working-directory: android
         run: chmod +x gradlew && ./gradlew :shared:jsBrowserProductionWebpack --no-daemon --stacktrace

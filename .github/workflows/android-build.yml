@@ -23,6 +23,13 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # Required: ubuntu runners do not include API 35 + build-tools by default.
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
+
       - name: Gradle assembleDebug
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
