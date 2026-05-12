@@ -39,7 +39,6 @@ kotlin {
     }
 }
 
-// Use Node from PATH (CI: setup-node). Must target extension name "kotlinNodeJs" — gradle.properties alone does not disable download in KGP 2.0.21.
 rootProject.extensions.configure<NodeJsRootExtension>(NodeJsRootExtension.EXTENSION_NAME) {
-    download.set(false)
+    download = false
 }
