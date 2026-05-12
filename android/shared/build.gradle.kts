@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
@@ -36,4 +37,9 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
         }
     }
+}
+
+// Use Node from PATH (CI: setup-node). Must target extension name "kotlinNodeJs" — gradle.properties alone does not disable download in KGP 2.0.21.
+rootProject.extensions.configure<NodeJsRootExtension>(NodeJsRootExtension.EXTENSION_NAME) {
+    download.set(false)
 }
