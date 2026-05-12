@@ -146,6 +146,27 @@ Typical debug APK output:
 
 `android/app/build/outputs/apk/debug/app-debug.apk`
 
+### Are builds pushed to GitHub?
+
+**Only what you commit** is pushed. The Gradle output folder `android/app/build/` is listed in [`.gitignore`](.gitignore), so **APKs are not uploaded as part of normal commits** unless you deliberately add them.
+
+**Recommendation:** do **not** commit large `build/` trees or debug APKs into git (repo bloat, merge noise, binaries age quickly). Better options:
+
+| Approach | Use when |
+|----------|----------|
+| **GitHub Actions artifacts** (this repo) | You want a fresh **debug APK** built on each push to `main`; users download the zip from the Actions tab. |
+| **GitHub Releases** | You tag a version and attach a **release APK** (often signed) for “official” downloads. |
+
+This repository includes [`.github/workflows/android-build.yml`](.github/workflows/android-build.yml): it runs `./gradlew assembleDebug` on pushes that touch `android/` and uploads **`app-debug.apk`** as a workflow artifact named **`app-debug-apk`**.
+
+**How to download the APK**
+
+1. Open the repo on GitHub → **Actions** → select **Android build** → latest successful run.  
+2. Under **Artifacts**, download **`app-debug-apk`** (zip containing `app-debug.apk`).  
+3. Copy the APK to your phone and install (you may need to allow install from unknown sources for that file manager).
+
+Debug builds are convenient for testing; for public distribution you typically add **signing** and publish **release** builds via Play Store or signed Release APK/AAB.
+
 ---
 
 ## Controls (current version)
