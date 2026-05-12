@@ -49,33 +49,44 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew :shared:jsBrowserProductionWebpack --no-daemon --stacktrace
 
-      # Webpack output path varies by KGP version; search the whole android tree (not only shared/build).
+      # Pick a directory that contains yetris.js; ensure index.html exists (GitHub Pages requires it at site root).
       - name: Locate webpack output for Pages
         id: site
         run: |
           set -euo pipefail
           cd "${GITHUB_WORKSPACE}"
           echo "Workflow ref: ${GITHUB_SHA}"
-          for d in android/shared/build/dist/pages android/shared/build/dist/js/productionExecutable; do
-            if [ -f "$d/yetris.js" ]; then
-              echo "pages_path=$d" >> "$GITHUB_OUTPUT"
-              echo "Found bundle at $d"; ls -la "$d"
-              exit 0
+
+          SITE=""
+          for zone in android/shared/build/dist android/shared/build; do
+            if [ -d "$zone" ]; then
+              while IFS= read -r f; do
+                [ -z "$f" ] && continue
+                d=$(dirname "$f")
+                if [ -f "$d/yetris.js" ]; then
+                  if [ -f "$d/index.html" ]; then SITE="$d"; break 2; fi
+                  [ -z "$SITE" ] && SITE="$d"
+                fi
+              done < <(find "$zone" -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null || true)
             fi
           done
-          echo "Searching android/ for yetris.js …"
-          find android -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null | head -20 || true
-          HIT=$(find android -type f -name 'yetris.js' ! -path '*/node_modules/*' 2>/dev/null | head -1 || true)
-          if [ -z "$HIT" ]; then
-            echo "yetris.js not found under android/. Sample dirs:"
-            find android/shared/build -type d 2>/dev/null | head -40 || true
-            find android -type f -name '*.html' 2>/dev/null | grep -v node_modules | head -20 || true
+
+          if [ -z "$SITE" ]; then
+            echo "yetris.js not found under android/shared/build"
+            find android/shared/build -type f -name '*.js' 2>/dev/null | head -30 || true
             exit 1
           fi
-          SITE=$(dirname "$HIT")
+
+          if [ ! -f "$SITE/index.html" ]; then
+            echo "No index.html next to yetris.js; copying from jsMain resources"
+            cp android/shared/src/jsMain/resources/index.html "$SITE/index.html"
+          fi
+
+          ls -la "$SITE"
+          test -f "$SITE/index.html"
+          test -f "$SITE/yetris.js"
           echo "pages_path=$SITE" >> "$GITHUB_OUTPUT"
           echo "Using bundle directory: $SITE"
-          ls -la "$SITE"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
