@@ -2,6 +2,14 @@
 
 A personal, offline **block-stacking game** for Android—classic handheld-style play with touch controls, built with **Kotlin** and **Jetpack Compose**.
 
+**Try it:** **[Play in your browser](https://yorgopetsas.github.io/yetris/)** — no install; runs the same core engine as the Android app (best score stays in that browser only). The live page is refreshed when a maintainer runs **Actions → Web preview (GitHub Pages)**. For the **Android APK**, use **Actions → Android CI** → artifact **`app-debug-apk`**.
+
+<p align="center">
+  <a href="https://yorgopetsas.github.io/yetris/" title="Open Yetris in the browser">
+    <img src="docs/images/yetris-preview.png" alt="Yetris gameplay preview — grid with stacked pieces and a cyan I-tetromino" width="320" />
+  </a>
+</p>
+
 <p align="center">
   <strong>Stack · Fall · Clear · Repeat</strong>
 </p>
@@ -49,7 +57,7 @@ The app uses a **7-bag randomizer** (common in guideline-style Tetris):
 
 This keeps drops **fair** (no long droughts of one shape) and **varied** across launches. Speed and difficulty from **gravity / levels** are separate from this RNG (future tuning).
 
-Implementation: [`PieceGenerator.kt`](android/app/src/main/java/com/yorgo/tetris/game/PieceGenerator.kt) (`resetSession()` on each new game / restart from [`RestartLogic.kt`](android/app/src/main/java/com/yorgo/tetris/game/RestartLogic.kt)).
+Implementation: [`PieceGenerator.kt`](android/shared/src/commonMain/kotlin/com/yorgo/tetris/game/PieceGenerator.kt) (`resetSession()` on each new game / restart from [`RestartLogic.kt`](android/shared/src/commonMain/kotlin/com/yorgo/tetris/game/RestartLogic.kt)).
 
 ---
 
@@ -70,7 +78,7 @@ Implementation: [`PieceGenerator.kt`](android/app/src/main/java/com/yorgo/tetris
 
 ### Persistence
 
-- **Personal best score + player name** stored in **app-private SharedPreferences** ([`SharedPreferencesBestScoreStore.kt`](android/app/src/main/java/com/yorgo/tetris/data/SharedPreferencesBestScoreStore.kt)) so best survives **process death** and long idle periods unlike an in-memory store.
+- **Personal best score + player name** stored in **app-private SharedPreferences** ([`SharedPreferencesBestScoreStore.kt`](android/shared/src/androidMain/kotlin/com/yorgo/tetris/data/SharedPreferencesBestScoreStore.kt)) so best survives **process death** and long idle periods unlike an in-memory store.
 
 ### Improvements over the initial prototype
 
