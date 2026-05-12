@@ -167,6 +167,18 @@ This repository includes [`.github/workflows/android-build.yml`](.github/workflo
 
 Debug builds are convenient for testing; for public distribution you typically add **signing** and publish **release** builds via Play Store or signed Release APK/AAB.
 
+### Web preview (GitHub Pages)
+
+Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. The **JS target** uses the same engine as Android; [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) runs `./gradlew :shared:jsBrowserProductionWebpack` on pushes to **`main`** that touch `android/shared/` and publishes the webpack output to **GitHub Pages**.
+
+**One-time setup (repository owner)**
+
+1. GitHub repo → **Settings** → **Pages** → **Build and deployment** → **Source**: **GitHub Actions** (not “Deploy from a branch”).  
+2. Push to `main` (or run the workflow manually under **Actions** → **Deploy web preview** → **Run workflow**).  
+3. After a green run, open the site at **`https://<user>.github.io/<repo>/`** (for this fork: **`https://yorgopetsas.github.io/yetris/`** if the repo name stays `yetris`).
+
+Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` — webpack dev server with the same `index.html` under `shared/src/jsMain/resources/`.
+
 ---
 
 ## Controls (current version)

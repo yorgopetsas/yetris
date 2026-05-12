@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yetris (web preview)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 28rem; margin: 1rem auto; padding: 0 0.75rem; }
+    #gameCanvas { display: block; margin: 0.75rem auto; border: 2px solid #222; image-rendering: pixelated; }
+    .row-edge { display: flex; justify-content: space-between; gap: 0.5rem; margin: 0.35rem 0; }
+    .row-center { display: flex; justify-content: center; gap: 1rem; margin: 0.35rem 0; }
+    button { padding: 0.45rem 0.85rem; font-size: 1rem; cursor: pointer; }
+    #nameEntry { margin-top: 0.75rem; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; }
+    #nameEntry input { width: 100%; margin-bottom: 0.5rem; padding: 0.35rem; box-sizing: border-box; }
+    .muted { color: #555; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>Yetris</h1>
+  <p class="muted">Preview build from the same engine as the Android app. Personal best is stored in this browser only.</p>
+  <p id="scoreLine">Score: 0 | Best: 0</p>
+  <canvas id="gameCanvas" width="180" height="360"></canvas>
+  <div class="row-edge">
+    <button type="button" id="btnLeft">Left</button>
+    <button type="button" id="btnRight">Right</button>
+  </div>
+  <div class="row-center">
+    <button type="button" id="btnRot">Rotate</button>
+    <button type="button" id="btnDrop">Drop</button>
+  </div>
+  <p><button type="button" id="btnRestart">Restart</button></p>
+  <p id="status">Starting…</p>
+  <div id="nameEntry" style="display:none">
+    <label for="nameInput">New personal best — your name</label>
+    <input type="text" id="nameInput" maxlength="24" placeholder="Anonymous" autocomplete="off" />
+    <button type="button" id="nameSave">Save &amp; restart</button>
+  </div>
+  <script src="yetris.js"></script>
+</body>
+</html>

@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AndroidTetrisClone"
 include(":app")
+include(":shared")

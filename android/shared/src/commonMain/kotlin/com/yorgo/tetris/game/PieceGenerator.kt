@@ -14,7 +14,7 @@ class PieceGenerator {
 
     /** Call when starting a new game session or full restart so bags and RNG differ per run. */
     fun resetSession() {
-        val seed = System.nanoTime() xor Any().hashCode().toLong()
+        val seed = entropySeed()
         random = Random(seed)
         bag.clear()
         refillBag()
