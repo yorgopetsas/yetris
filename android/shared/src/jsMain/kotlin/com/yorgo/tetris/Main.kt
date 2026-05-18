@@ -17,6 +17,7 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLParagraphElement
+import org.w3c.dom.events.KeyboardEvent
 
 private val pieceColors: Map<PieceType, String> = mapOf(
     PieceType.I to "#00f0f0",
@@ -40,7 +41,7 @@ fun main() {
     val nameEntry = document.getElementById("nameEntry") as HTMLDivElement
     val nameInput = document.getElementById("nameInput") as HTMLInputElement
 
-    val cellPx = 18
+    val cellPx = 27
     canvas.width = BoardConfig.WIDTH * cellPx
     canvas.height = BoardConfig.HEIGHT * cellPx
 
@@ -109,6 +110,30 @@ fun main() {
     wire("btnDrop") { engine.dispatch(InputActionType.SOFT_DROP) }
     wire("btnRestart") {
         engine.dispatch(InputActionType.RESTART)
+    }
+
+    fun dispatchGameplay(action: InputActionType) {
+        if (engine.session.status == SessionStatus.RUNNING) {
+            engine.dispatch(action)
+        }
+    }
+
+    canvas.tabIndex = 0
+    canvas.focus()
+
+    window.onkeydown = { event ->
+        val keyEvent = event as? KeyboardEvent
+        if (keyEvent == null || document.activeElement == nameInput) return@onkeydown null
+        val action = when (keyEvent.key) {
+            "ArrowLeft" -> InputActionType.MOVE_LEFT
+            "ArrowRight" -> InputActionType.MOVE_RIGHT
+            "ArrowUp" -> InputActionType.ROTATE
+            "ArrowDown" -> InputActionType.SOFT_DROP
+            else -> return@onkeydown null
+        }
+        keyEvent.preventDefault()
+        dispatchGameplay(action)
+        null
     }
 
     (document.getElementById("nameSave") as HTMLButtonElement).onclick = {

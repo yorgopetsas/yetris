@@ -191,6 +191,8 @@ Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. Th
 
 Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` — webpack dev server with the same `index.html` under `shared/src/jsMain/resources/`.
 
+**Web controls:** on-screen buttons plus **arrow keys** (← → move, ↑ rotate, ↓ soft drop). The canvas is rendered at 1.5× scale (270×540 px) for easier play in the browser.
+
 ---
 
 ## Controls (current version)
@@ -201,6 +203,7 @@ Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` —
 | **Right** | Move active piece right (end edge of control row) |
 | **Rotate** | Rotate when placement is valid (center, with Drop) |
 | **Drop** | Soft drop (center, with Rotate) |
+| **Web: arrow keys** | ← → move, ↑ rotate, ↓ soft drop (browser preview only) |
 
 ---
 
