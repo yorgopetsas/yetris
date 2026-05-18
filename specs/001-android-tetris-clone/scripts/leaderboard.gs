@@ -10,6 +10,14 @@ const SHEET_NAME = 'Scores';
 
 function doGet(e) {
   if (!authorized_(e)) return jsonResponse_({ error: 'unauthorized' }, 403);
+  // GET submit works from browsers (POST often blocked by CORS / redirects).
+  if (e.parameter.action === 'submit') {
+    const name = String(e.parameter.name || '').trim();
+    const score = parseInt(e.parameter.score, 10);
+    if (!name || isNaN(score)) return jsonResponse_({ error: 'invalid' }, 400);
+    upsertScore_(name, score);
+    return jsonResponse_({ ok: true });
+  }
   const limit = Math.min(parseInt(e.parameter.limit || '10', 10), 50);
   const rows = readScores_();
   const top = rows

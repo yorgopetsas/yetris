@@ -41,25 +41,21 @@ class FriendsLeaderboardClient(
     suspend fun submit(name: String, score: Int): Result<Unit> = withContext(Dispatchers.IO) {
         if (!isConfigured) return@withContext Result.success(Unit)
         runCatching {
-            val url = URL("$baseUrl?token=${encode(token)}")
-            val payload = JSONObject()
-                .put("name", name)
-                .put("score", score)
-                .toString()
+            val url = URL(
+                "$baseUrl?token=${encode(token)}&action=submit" +
+                    "&name=${encode(name)}&score=$score"
+            )
             val conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "POST"
-                doOutput = true
-                setRequestProperty("Content-Type", "application/json; charset=utf-8")
+                requestMethod = "GET"
                 connectTimeout = 10_000
                 readTimeout = 10_000
             }
             try {
-                conn.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
                 val code = conn.responseCode
-                if (code !in 200..299) {
-                    val body = conn.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
-                    error("HTTP $code: $body")
-                }
+                val body = (if (code in 200..299) conn.inputStream else conn.errorStream)
+                    ?.bufferedReader()?.use { it.readText() }.orEmpty()
+                if (code !in 200..299) error("HTTP $code: $body")
+                if (!body.contains("\"ok\"")) error("Unexpected response: $body")
             } finally {
                 conn.disconnect()
             }

@@ -60,27 +60,34 @@ suspend fun fetchTopScores(limit: Int = 10): List<WebLeaderboardEntry> {
     }
 }
 
-suspend fun submitScore(name: String, score: Int) {
-    if (!WebLeaderboardConfig.isConfigured()) return
+suspend fun submitScore(name: String, score: Int): Boolean {
+    if (!WebLeaderboardConfig.isConfigured()) return false
     val fullUrl =
-        "${WebLeaderboardConfig.url()}?token=${encodeUriComponent(WebLeaderboardConfig.token())}"
-    val body = """{"name":${jsonString(name)},"score":$score}"""
-    suspendCoroutine { cont ->
-        val opts = js("{}")
-        opts.method = "POST"
-        val headers = js("{}")
-        headers["Content-Type"] = "application/json"
-        opts.headers = headers
-        opts.body = body
-        window.asDynamic().fetch(fullUrl, opts).then {
-            cont.resume(Unit)
+        "${WebLeaderboardConfig.url()}?token=${encodeUriComponent(WebLeaderboardConfig.token())}" +
+            "&action=submit&name=${encodeUriComponent(name)}&score=$score"
+    return suspendCoroutine { cont ->
+        window.asDynamic().fetch(fullUrl).then { response: dynamic ->
+            val status = response.status as Int
+            if (status !in 200..299) {
+                console.error("Leaderboard submit failed: HTTP $status")
+                cont.resume(false)
+                return@then undefined
+            }
+            response.json().then { json: dynamic ->
+                val ok = json.ok == true
+                if (!ok) console.error("Leaderboard submit rejected:", json)
+                cont.resume(ok)
+                undefined
+            }.catch {
+                console.error("Leaderboard submit parse error", it)
+                cont.resume(false)
+                undefined
+            }
             undefined
         }.catch {
-            cont.resume(Unit)
+            console.error("Leaderboard submit network error", it)
+            cont.resume(false)
             undefined
         }
     }
 }
-
-private fun jsonString(value: String): String =
-    "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""

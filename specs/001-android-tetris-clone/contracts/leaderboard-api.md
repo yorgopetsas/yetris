@@ -19,21 +19,19 @@ All requests require query parameter `token` matching server `LEADERBOARD_TOKEN`
 ]
 ```
 
-## POST — submit score
+## GET — submit score (recommended)
 
-`POST {baseUrl}?token={token}`
+Browsers block many `POST` calls to Apps Script; use GET:
 
-**Body** `application/json`:
-
-```json
-{ "name": "Alex", "score": 12000 }
-```
+`GET {baseUrl}?token={token}&action=submit&name={name}&score={score}`
 
 **Response** `200 application/json`:
 
 ```json
 { "ok": true }
 ```
+
+`POST` with JSON body is still supported by the script for non-browser clients but GET is preferred.
 
 Server keeps one row per player name (case-insensitive); updates only if new score is strictly greater.
 
