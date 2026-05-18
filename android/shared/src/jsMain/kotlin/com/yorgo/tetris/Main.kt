@@ -10,7 +10,6 @@ import com.yorgo.tetris.game.GameEngine
 import com.yorgo.tetris.leaderboard.WebLeaderboardConfig
 import com.yorgo.tetris.leaderboard.fetchTopScores
 import com.yorgo.tetris.leaderboard.submitScore
-import kotlinx.browser.console
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
@@ -190,7 +189,9 @@ fun main() {
             store.writeBest(session.score, trimmed)
             scope.launch {
                 if (!submitScore(trimmed, session.score)) {
-                    console.error("Could not save score to shared leaderboard. Check Apps Script token and redeploy.")
+                    jsConsoleError(
+                        "Could not save score to shared leaderboard. Check Apps Script token and redeploy."
+                    )
                 }
             }
         }
