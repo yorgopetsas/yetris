@@ -29,7 +29,9 @@ data class UiState(
     val savedGameScore: Int = 0,
     val savedGameAtEpochMillis: Long = 0L,
     val friendsLeaderboard: List<LeaderboardEntry> = emptyList(),
-    val leaderboardConfigured: Boolean = false
+    val leaderboardConfigured: Boolean = false,
+    val showLeaderboardDialog: Boolean = false,
+    val leaderboardLoading: Boolean = false
 )
 
 class GameViewModel @JvmOverloads constructor(
@@ -125,13 +127,28 @@ class GameViewModel @JvmOverloads constructor(
         refreshLeaderboard()
     }
 
-    private fun refreshLeaderboard() {
+    fun openLeaderboardDialog() {
+        _ui.value = _ui.value.copy(showLeaderboardDialog = true, leaderboardLoading = true)
+        refreshLeaderboard(onComplete = { loading ->
+            _ui.value = _ui.value.copy(leaderboardLoading = loading)
+        })
+    }
+
+    fun dismissLeaderboardDialog() {
+        _ui.value = _ui.value.copy(showLeaderboardDialog = false, leaderboardLoading = false)
+    }
+
+    private fun refreshLeaderboard(
+        onComplete: ((Boolean) -> Unit)? = null
+    ) {
         viewModelScope.launch {
             val entries = leaderboardRepository.refreshTop(limit = 10)
             _ui.value = _ui.value.copy(
                 friendsLeaderboard = entries,
-                leaderboardConfigured = com.yorgo.tetris.BuildConfig.LEADERBOARD_URL.isNotBlank()
+                leaderboardConfigured = com.yorgo.tetris.BuildConfig.LEADERBOARD_URL.isNotBlank(),
+                leaderboardLoading = false
             )
+            onComplete?.invoke(false)
         }
     }
 
@@ -156,7 +173,9 @@ class GameViewModel @JvmOverloads constructor(
             savedGameScore = saved?.session?.score ?: _ui.value.savedGameScore,
             savedGameAtEpochMillis = saved?.savedAtEpochMillis ?: _ui.value.savedGameAtEpochMillis,
             friendsLeaderboard = _ui.value.friendsLeaderboard,
-            leaderboardConfigured = com.yorgo.tetris.BuildConfig.LEADERBOARD_URL.isNotBlank()
+            leaderboardConfigured = com.yorgo.tetris.BuildConfig.LEADERBOARD_URL.isNotBlank(),
+            showLeaderboardDialog = _ui.value.showLeaderboardDialog,
+            leaderboardLoading = _ui.value.leaderboardLoading
         )
     }
 

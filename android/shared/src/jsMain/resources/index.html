@@ -13,12 +13,23 @@
     #nameEntry { margin-top: 0.75rem; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; }
     #nameEntry input { width: 100%; margin-bottom: 0.5rem; padding: 0.35rem; box-sizing: border-box; }
     .muted { color: #555; font-size: 0.85rem; }
+    .linkish { background: none; border: none; color: #1565c0; text-decoration: underline; padding: 0; font-size: inherit; cursor: pointer; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    .modal-box { background: #fff; padding: 1rem 1.25rem; border-radius: 8px; max-width: 22rem; width: 90%; max-height: 80vh; overflow: auto; }
+    .modal-box h2 { margin: 0 0 0.75rem; font-size: 1.15rem; }
+    #leaderboardList { margin: 0 0 1rem; padding-left: 1.25rem; }
   </style>
+  <script>
+    // Same Google Apps Script URL/token as android/local.properties — one shared Sheet for all devices.
+    window.YETRIS_LEADERBOARD_URL = "https://script.google.com/macros/s/AKfycby44TCafvGC9EbuKsti3Hv9PX0qvflXHGcPBI6no39zteDpZF0tJrxgKk-EQHaRFgnwbw/exec";
+    window.YETRIS_LEADERBOARD_TOKEN = "rSyIsksks87908123740j";
+  </script>
 </head>
 <body>
   <h1>Yetris</h1>
-  <p class="muted">Preview build from the same engine as the Android app. Personal best is stored in this browser only.</p>
+  <p class="muted">Best on this device is saved in this browser only. Top 10 list uses the shared online leaderboard when configured below.</p>
   <p id="scoreLine">Score: 0 | Best: 0</p>
+  <p><button type="button" class="linkish" id="btnHighScores">Top 10 high scores (all players)</button></p>
   <canvas id="gameCanvas" width="270" height="540" tabindex="0" aria-label="Yetris playfield"></canvas>
   <p class="muted">Keyboard: ← → move, ↑ rotate, ↓ drop</p>
   <div class="row-edge">
@@ -35,6 +46,13 @@
     <label for="nameInput">New personal best — your name</label>
     <input type="text" id="nameInput" maxlength="24" placeholder="Anonymous" autocomplete="off" />
     <button type="button" id="nameSave">Save &amp; restart</button>
+  </div>
+  <div id="leaderboardModal" class="modal-overlay" style="display: none;" aria-hidden="true">
+    <div class="modal-box" role="dialog" aria-labelledby="leaderboardTitle">
+      <h2 id="leaderboardTitle">Top 10 high scores</h2>
+      <div id="leaderboardBody">Loading…</div>
+      <button type="button" id="leaderboardClose">Close</button>
+    </div>
   </div>
   <script src="yetris.js"></script>
 </body>

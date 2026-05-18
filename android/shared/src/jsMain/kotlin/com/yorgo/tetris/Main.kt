@@ -7,10 +7,14 @@ import com.yorgo.tetris.domain.PieceType
 import com.yorgo.tetris.domain.SessionStatus
 import com.yorgo.tetris.game.CollisionRules
 import com.yorgo.tetris.game.GameEngine
+import com.yorgo.tetris.leaderboard.WebLeaderboardConfig
+import com.yorgo.tetris.leaderboard.fetchTopScores
+import com.yorgo.tetris.leaderboard.submitScore
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLButtonElement
 import org.w3c.dom.HTMLCanvasElement
@@ -83,7 +87,7 @@ fun main() {
         val bestName = store.readBestPlayerName()
         val bestLabel = if (bestName.isNotEmpty()) " ($bestName)" else ""
         scoreLine.textContent =
-            "Score: ${session.score} | Best: ${store.readBestScore()}$bestLabel"
+            "Score: ${session.score} | Best on this device: ${store.readBestScore()}$bestLabel"
 
         statusLine.textContent = when (session.status) {
             SessionStatus.READY -> "Ready"
@@ -136,6 +140,42 @@ fun main() {
         null
     }
 
+    val leaderboardModal = document.getElementById("leaderboardModal") as HTMLDivElement
+    val leaderboardBody = document.getElementById("leaderboardBody") as HTMLDivElement
+
+    fun showLeaderboardModal() {
+        leaderboardModal.style.display = "flex"
+        leaderboardModal.setAttribute("aria-hidden", "false")
+        leaderboardBody.textContent = "Loading…"
+        scope.launch {
+            if (!WebLeaderboardConfig.isConfigured()) {
+                leaderboardBody.textContent =
+                    "Global leaderboard is not configured. Set YETRIS_LEADERBOARD_URL and " +
+                        "YETRIS_LEADERBOARD_TOKEN in index.html (same values as android/local.properties)."
+                return@launch
+            }
+            val entries = fetchTopScores(limit = 10)
+            if (entries.isEmpty()) {
+                leaderboardBody.textContent =
+                    "No scores yet. Beat your personal best, enter your name, and post to the shared list."
+            } else {
+                leaderboardBody.innerHTML = "<ol id=\"leaderboardList\">" +
+                    entries.joinToString("") { e ->
+                        "<li>${escapeHtml(e.name)} — ${e.score}</li>"
+                    } +
+                    "</ol>"
+            }
+        }
+    }
+
+    fun hideLeaderboardModal() {
+        leaderboardModal.style.display = "none"
+        leaderboardModal.setAttribute("aria-hidden", "true")
+    }
+
+    wire("btnHighScores") { showLeaderboardModal() }
+    wire("leaderboardClose") { hideLeaderboardModal() }
+
     (document.getElementById("nameSave") as HTMLButtonElement).onclick = {
         val trimmed = nameInput.value.trim().take(LocalStorageBestScoreStore.MAX_NAME_LEN)
             .ifEmpty { "Anonymous" }
@@ -144,6 +184,7 @@ fun main() {
             session.score > store.readBestScore()
         ) {
             store.writeBest(session.score, trimmed)
+            scope.launch { submitScore(trimmed, session.score) }
         }
         engine.dispatch(InputActionType.RESTART)
         render()
@@ -157,3 +198,9 @@ fun main() {
     render()
     engine.start(scope)
 }
+
+private fun escapeHtml(text: String): String =
+    text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\"", "&quot;")

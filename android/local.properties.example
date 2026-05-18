@@ -1,3 +1,4 @@
 # Copy to local.properties (gitignored) and fill in after deploying leaderboard.gs
+# Use the SAME URL and token in android/shared/src/jsMain/resources/index.html for the web demo.
 LEADERBOARD_URL=https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec
 LEADERBOARD_TOKEN=your-random-secret

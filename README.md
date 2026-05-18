@@ -76,9 +76,18 @@ Implementation: [`PieceGenerator.kt`](android/shared/src/commonMain/kotlin/com/y
 - **Score panel** for current score and **best** (with **name** when saved).
 - **Game over**: normal restart dialog, or **new personal best** flow with name entry / anonymous ([`GameOverDialog.kt`](android/app/src/main/java/com/yorgo/tetris/ui/GameOverDialog.kt)).
 
-### Persistence
+### Persistence and high scores
 
-- **Personal best score + player name** stored in **app-private SharedPreferences** ([`SharedPreferencesBestScoreStore.kt`](android/shared/src/androidMain/kotlin/com/yorgo/tetris/data/SharedPreferencesBestScoreStore.kt)) so best survives **process death** and long idle periods unlike an in-memory store.
+There are **two separate** score concepts:
+
+| What you see | Where it lives | Synced across phone / web? |
+|--------------|----------------|----------------------------|
+| **Best on this device** | Android `SharedPreferences` or browser `localStorage` | **No** — each install/browser keeps its own personal best |
+| **Top 10 high scores (all players)** | Google Sheet via Apps Script ([`leaderboard.gs`](specs/001-android-tetris-clone/scripts/leaderboard.gs)) | **Yes** — one shared online list when URL + token are configured |
+
+Tap **Top 10 high scores** in the app or on the [web demo](https://yorgopetsas.github.io/yetris/) to open the popup. A new score is posted to the shared list when you beat your **local** best and save your name after game over.
+
+**To enable the global list:** deploy `leaderboard.gs`, then set the same `LEADERBOARD_URL` and `LEADERBOARD_TOKEN` in `android/local.properties` (APK builds) and in `index.html` (`window.YETRIS_LEADERBOARD_*`) before publishing the web build.
 
 ### Improvements over the initial prototype
 
@@ -191,7 +200,7 @@ Gameplay logic lives in the Kotlin Multiplatform module **`android/shared`**. Th
 
 Local web dev (from `android/`): `./gradlew :shared:jsBrowserDevelopmentRun` — webpack dev server with the same `index.html` under `shared/src/jsMain/resources/`.
 
-**Web controls:** on-screen buttons plus **arrow keys** (← → move, ↑ rotate, ↓ soft drop). The canvas is rendered at 1.5× scale (270×540 px) for easier play in the browser.
+**Web controls:** on-screen buttons plus **arrow keys** (← → move, ↑ rotate, ↓ soft drop). The canvas is rendered at 1.5× scale (270×540 px) for easier play in the browser. Configure `window.YETRIS_LEADERBOARD_URL` / `TOKEN` in [`index.html`](android/shared/src/jsMain/resources/index.html) (same values as `local.properties`) so the web demo uses the same global top-10 list as Android.
 
 ---
 

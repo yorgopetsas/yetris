@@ -53,12 +53,17 @@ fun GameScreen(vm: GameViewModel = viewModel()) {
             score = state.score,
             best = state.bestScore,
             bestPlayerName = state.bestPlayerName,
-            status = state.status
+            status = state.status,
+            onOpenLeaderboard = vm::openLeaderboardDialog
         )
-        FriendsLeaderboardPanel(
-            entries = state.friendsLeaderboard,
-            configured = state.leaderboardConfigured
-        )
+        if (state.showLeaderboardDialog) {
+            LeaderboardDialog(
+                entries = state.friendsLeaderboard,
+                configured = state.leaderboardConfigured,
+                loading = state.leaderboardLoading,
+                onDismiss = vm::dismissLeaderboardDialog
+            )
+        }
         if (state.activeCells.isEmpty() && state.status == SessionStatus.READY && !state.showResumePrompt) {
             Button(onClick = { vm.onAction(InputActionType.START) }) {
                 Text("Start Game")
