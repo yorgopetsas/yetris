@@ -127,16 +127,19 @@ fun main() {
 
     window.onkeydown = { event ->
         val keyEvent = event as? KeyboardEvent
-        if (keyEvent == null || document.activeElement == nameInput) return@onkeydown null
-        val action = when (keyEvent.key) {
-            "ArrowLeft" -> InputActionType.MOVE_LEFT
-            "ArrowRight" -> InputActionType.MOVE_RIGHT
-            "ArrowUp" -> InputActionType.ROTATE
-            "ArrowDown" -> InputActionType.SOFT_DROP
-            else -> return@onkeydown null
+        if (keyEvent != null && document.activeElement != nameInput) {
+            val action = when (keyEvent.key) {
+                "ArrowLeft" -> InputActionType.MOVE_LEFT
+                "ArrowRight" -> InputActionType.MOVE_RIGHT
+                "ArrowUp" -> InputActionType.ROTATE
+                "ArrowDown" -> InputActionType.SOFT_DROP
+                else -> null
+            }
+            if (action != null) {
+                keyEvent.preventDefault()
+                dispatchGameplay(action)
+            }
         }
-        keyEvent.preventDefault()
-        dispatchGameplay(action)
         null
     }
 
