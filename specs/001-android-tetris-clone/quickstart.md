@@ -58,3 +58,19 @@ After this plan, run `/speckit.tasks` to generate dependency-ordered implementat
 2. Core engine files for collision, piece movement, locking, line clear, scoring, game-over, and restart are implemented.
 3. Compose UI files for game board, controls, score, and game-over restart flow are implemented.
 4. Lifecycle pause/resume observer and single-screen app bootstrap are implemented.
+
+## 8) Friends leaderboard setup
+1. Create a Google Sheet tab named `Scores` with header row: `name`, `score`, `updatedAt`.
+2. Paste [`scripts/leaderboard.gs`](scripts/leaderboard.gs) into Apps Script; set `LEADERBOARD_TOKEN`.
+3. Deploy as web app (Execute as: Me, Anyone with the link).
+4. Add to `android/local.properties` (do not commit):
+   ```properties
+   LEADERBOARD_URL=https://script.google.com/macros/s/YOUR_ID/exec
+   LEADERBOARD_TOKEN=your-random-secret
+   ```
+5. Rebuild the APK. Without these properties the game runs offline; leaderboard panel stays hidden or shows cache only.
+
+## 9) Persistent pause
+1. Tap **Pause** during a run to save state to device storage.
+2. Force-stop the app, reopen, choose **Continue** — board loads paused; tap **Resume** to play.
+3. **New game** or **Restart** clears the saved pause.

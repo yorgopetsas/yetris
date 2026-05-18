@@ -30,10 +30,19 @@ import com.yorgo.tetris.domain.SessionStatus
 @Composable
 fun GameScreen(vm: GameViewModel = viewModel()) {
     val state by vm.ui.collectAsState()
-    LaunchedEffect(state.status) {
-        if (state.status == SessionStatus.READY) {
+    LaunchedEffect(state.status, state.showResumePrompt) {
+        if (!state.showResumePrompt && state.status == SessionStatus.READY) {
             vm.onAction(InputActionType.START)
         }
+    }
+
+    if (state.showResumePrompt) {
+        ResumeGameDialog(
+            score = state.savedGameScore,
+            savedAtEpochMillis = state.savedGameAtEpochMillis,
+            onContinue = vm::onContinueSavedGame,
+            onNewGame = vm::onDiscardSavedGameAndStartNew
+        )
     }
 
     Column(
@@ -43,12 +52,20 @@ fun GameScreen(vm: GameViewModel = viewModel()) {
         ScorePanel(
             score = state.score,
             best = state.bestScore,
-            bestPlayerName = state.bestPlayerName
+            bestPlayerName = state.bestPlayerName,
+            status = state.status
         )
-        if (state.activeCells.isEmpty() && state.status == SessionStatus.READY) {
+        FriendsLeaderboardPanel(
+            entries = state.friendsLeaderboard,
+            configured = state.leaderboardConfigured
+        )
+        if (state.activeCells.isEmpty() && state.status == SessionStatus.READY && !state.showResumePrompt) {
             Button(onClick = { vm.onAction(InputActionType.START) }) {
                 Text("Start Game")
             }
+        }
+        if (state.status == SessionStatus.PAUSED) {
+            Text("Paused", style = MaterialTheme.typography.titleMedium)
         }
         BoardGrid(
             state = state,
@@ -56,7 +73,11 @@ fun GameScreen(vm: GameViewModel = viewModel()) {
                 .fillMaxWidth()
                 .weight(1f)
         )
-        ControlsPanel { vm.onAction(it) }
+        ControlsPanel(
+            status = state.status,
+            onAction = vm::onAction,
+            onPauseAndSave = vm::onPauseAndSave
+        )
         if (state.status == SessionStatus.GAME_OVER) {
             GameOverDialog(
                 score = state.score,
@@ -98,9 +119,9 @@ private fun BoardGrid(
                                     .border(0.5.dp, Color.Black.copy(alpha = 0.2f))
                                     .background(
                                         when {
-                                            active -> MaterialTheme.colorScheme.primary
-                                            cell -> Color.DarkGray
-                                            else -> Color(0xFFEEEEEE)
+                                            active -> Color(0xFF4CAF50)
+                                            cell -> Color(0xFF455A64)
+                                            else -> Color(0xFFECEFF1)
                                         }
                                     )
                             )

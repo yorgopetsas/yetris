@@ -3,6 +3,7 @@ package com.yorgo.tetris.game
 import com.yorgo.tetris.domain.GameSession
 import com.yorgo.tetris.domain.InputActionType
 import com.yorgo.tetris.domain.Piece
+import com.yorgo.tetris.domain.SavedGameSnapshot
 import com.yorgo.tetris.domain.SessionStatus
 import kotlinx.coroutines.CoroutineScope
 
@@ -25,6 +26,30 @@ class GameEngine(
     }
 
     fun stop() = clock.stop()
+
+    fun ensureClockStarted(scope: CoroutineScope) {
+        clock.start(scope) { tick() }
+    }
+
+    fun buildSnapshot(savedAtEpochMillis: Long): SavedGameSnapshot {
+        val sessionToSave = when (session.status) {
+            SessionStatus.RUNNING, SessionStatus.PAUSED ->
+                session.copy(status = SessionStatus.PAUSED)
+            else -> session.copy(status = SessionStatus.PAUSED)
+        }
+        return SavedGameSnapshot(
+            savedAtEpochMillis = savedAtEpochMillis,
+            session = sessionToSave,
+            bagQueue = pieceGenerator.snapshotQueue()
+        )
+    }
+
+    fun restore(snapshot: SavedGameSnapshot) {
+        clock.stop()
+        pieceGenerator.restoreQueue(snapshot.bagQueue)
+        session = snapshot.session.copy(status = SessionStatus.PAUSED)
+        notifyStateChanged()
+    }
 
     fun dispatch(action: InputActionType) {
         when (action) {

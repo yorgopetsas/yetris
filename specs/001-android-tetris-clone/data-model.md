@@ -59,6 +59,25 @@
   - `playerName` trimmed to a maximum length (implementation-defined, e.g. 24 characters).
   - Update best score and name only when a completed session records a score strictly greater than stored `bestScore`.
 
+## Entity: Saved Game Snapshot (Persisted)
+- **Purpose**: Stores a pausable in-progress session for long-term resume.
+- **Fields**:
+  - `version` (integer): Schema version.
+  - `savedAtEpochMillis` (long): When pause was saved.
+  - `session` (embedded): `GameSession` at save time (status `PAUSED`).
+  - `bagQueue` (list of piece types): Remaining spawn order from 7-bag.
+- **Validation Rules**:
+  - Saved only from `RUNNING` or `PAUSED` via explicit Pause control.
+  - Cleared on new game, restart, or after game-over restart flow.
+
+## Entity: Friends Leaderboard Entry (Remote, cached)
+- **Purpose**: Display name and score for friends top-N list.
+- **Fields**:
+  - `name` (string): Display name.
+  - `score` (integer): Best score for that name on the server.
+- **Validation Rules**:
+  - Server keeps highest score per name (case-insensitive).
+
 ## Relationships
 - A `GameSession` contains one `GameBoard`.
 - A `GameSession` has zero or one `ActivePiece` at any given moment.

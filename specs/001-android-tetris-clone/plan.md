@@ -11,12 +11,12 @@ Build a single-player Android game that reproduces classic handheld Tetris gamep
 
 **Language/Version**: Kotlin 2.x (Android stable toolchain)  
 **Primary Dependencies**: Android SDK, Jetpack Compose (UI), Kotlin coroutines (game loop timing)  
-**Storage**: Local on-device preferences/file storage for optional best score persistence  
+**Storage**: Local `SharedPreferences` for personal best, saved pause snapshot, and cached friends leaderboard; optional Google Apps Script HTTP endpoint for leaderboard  
 **Testing**: JUnit for domain logic, Android instrumentation tests for UI/input flows  
 **Target Platform**: Android 10+ phones  
-**Project Type**: Mobile app (single-module Android application for v1)  
+**Project Type**: Mobile app (KMP shared engine + Android Compose UI)  
 **Performance Goals**: Maintain smooth interaction and visual updates equivalent to 60 frames per second during gameplay  
-**Constraints**: Offline-first, single-player only, no backend services, responsive controls under 200ms perceived latency  
+**Constraints**: Offline-first gameplay; optional HTTP for friends leaderboard only; responsive controls under 200ms perceived latency  
 **Scale/Scope**: One personal-use app, single gameplay mode, one active session at a time
 
 ## Constitution Check
@@ -72,3 +72,5 @@ Aligned with feature updates:
 - **Controls**: single full-width row — Move Left at start edge, Move Right at end edge, Rotate and Soft Drop centered between them (`ControlsPanel`).
 - **Personal best**: `SharedPreferences`-backed store for score + optional display name; name captured when a run beats the stored best (`SharedPreferencesBestScoreStore`, `GameOverDialog`).
 - **Piece RNG**: 7-bag randomizer with per-session shuffle (`PieceGenerator.resetSession` from each new game/restart).
+- **Persistent pause**: explicit Pause saves `SavedGameSnapshot` (board, score, active piece, bag queue); cold-start Continue/New game prompt; Continue restores Paused until Resume.
+- **Friends leaderboard**: Google Apps Script + Sheet backend; `FriendsLeaderboardClient` HTTP GET/POST; config via `android/local.properties`.

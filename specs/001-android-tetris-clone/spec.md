@@ -88,6 +88,33 @@ As the player, I want my best score to persist across app restarts and optionall
 
 ---
 
+### User Story 6 - Friends leaderboard (Priority: P3)
+
+As a player, I want to see how my best score compares to friends and submit my score when I beat my personal best, without creating an account.
+
+**Independent Test**: Configure leaderboard URL in `local.properties`, beat personal best with a name, verify entry appears in the shared Google Sheet and in the in-app top list.
+
+**Acceptance Scenarios**:
+
+1. **Given** leaderboard is configured, **When** the app starts, **Then** a friends top-N list is shown (cached if offline).
+2. **Given** game over with a new personal best and name saved, **When** network is available, **Then** the score is submitted to the friends leaderboard.
+
+---
+
+### User Story 7 - Persistent pause and resume (Priority: P2)
+
+As a player, I want to tap Pause to save my in-progress game and continue days later from the same board, score, and upcoming pieces.
+
+**Independent Test**: Play mid-game, tap Pause, force-stop the app, reopen, choose Continue, confirm board/score match and game remains paused until Resume.
+
+**Acceptance Scenarios**:
+
+1. **Given** an active run, **When** the player taps Pause, **Then** full game state is saved locally.
+2. **Given** a saved pause exists, **When** the app cold-starts, **Then** the player can choose Continue or New game.
+3. **Given** Continue is chosen, **When** the board loads, **Then** status is Paused until the player taps Resume.
+
+---
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
@@ -103,11 +130,18 @@ As the player, I want my best score to persist across app restarts and optionall
 - **FR-009**: The system MUST detect game-over state when a new piece cannot be spawned in a valid location.
 - **FR-010**: The system MUST provide a restart action that begins a new session from a clean initial state after game over.
 - **FR-011**: The system MUST support interaction via Android touch controls appropriate for move, rotate, and drop actions.
-- **FR-012**: The system MUST run as a standalone personal-use mobile app and does not require user accounts, sharing, or online multiplayer features.
+- **FR-012**: The system MUST run as a standalone personal-use mobile app without user accounts; optional friends leaderboard sync via configured HTTP endpoint does not require player sign-in.
 - **FR-013**: The system MUST lay out primary gameplay controls in one row such that Move Left is toward the screen start edge, Move Right toward the screen end edge, and Rotate with Soft Drop grouped and visually centered between them.
 - **FR-014**: The system MUST persist the personal best score on device storage so it survives process death and long idle periods.
 - **FR-015**: When a session ends with a score strictly greater than the stored best, the system MUST offer entry of a short display name (trimmed, length-limited) before treating the new score as the recorded best.
 - **FR-016**: The piece sequence SHALL use a guideline-style **7-bag** randomizer with **per-session** shuffling; it MUST NOT rely on a fixed global random seed across app launches.
+- **FR-017**: When leaderboard URL and token are configured, the system MUST fetch and display a friends top-N list (cached when offline).
+- **FR-018**: When a new personal best is saved with a display name, the system SHOULD submit that name and score to the friends leaderboard without blocking restart.
+- **FR-019**: The system MUST provide an explicit Pause control that persists board, score, active piece, and remaining piece queue to device storage.
+- **FR-020**: On cold start with a saved pause, the system MUST prompt Continue or New game and MUST NOT auto-start a new run until the player chooses.
+- **FR-021**: Continue MUST restore the saved session in Paused status until the player taps Resume.
+- **FR-022**: New game, restart, and completed game-over flows MUST clear any saved pause snapshot.
+- **FR-023**: App backgrounding MUST NOT write a persistent save (only explicit Pause / Save pause).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -116,6 +150,8 @@ As the player, I want my best score to persist across app restarts and optionall
 - **Piece**: A falling shape with type, orientation, and position that can be moved/rotated until locked.
 - **Score Record**: Numeric value representing player performance for the current session based on cleared lines.
 - **Personal Best Record**: Locally persisted best score paired with an optional display name for presentation on the score panel.
+- **Saved Game Snapshot**: Locally persisted in-progress session (board, score, active piece, piece queue) for long-term resume.
+- **Friends Leaderboard Entry**: Remote name/score pair cached on device for display.
 
 ## Success Criteria *(mandatory)*
 

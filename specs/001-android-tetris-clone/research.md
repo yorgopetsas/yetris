@@ -28,7 +28,21 @@
   - Full session history persistence (rejected: lower value than gameplay polish for initial release).
   - No persistence at all (considered acceptable fallback if time-constrained).
 
-## Decision 5: Testing strategy
+## Decision 5: Friends leaderboard backend
+- **Decision**: Google Apps Script web app backed by a Google Sheet; Android uses `HttpURLConnection` without Firebase SDK.
+- **Rationale**: Minimal code for a small friend group; friends can view scores in the sheet; no GitHub or app accounts required.
+- **Alternatives considered**:
+  - Firebase Firestore (rejected: heavier Android setup).
+  - Cloudflare Worker + KV (acceptable fallback; same HTTP client).
+
+## Decision 6: Persistent pause storage
+- **Decision**: JSON snapshot in `SharedPreferences` including full board, session fields, active piece, and remaining 7-bag queue.
+- **Rationale**: Offline, no new dependencies, survives process death and long idle periods; queue snapshot preserves exact next pieces.
+- **Alternatives considered**:
+  - Auto-save on background (rejected: user wants explicit Pause only).
+  - Cloud sync of in-progress games (rejected: out of scope).
+
+## Decision 7: Testing strategy
 - **Decision**: Prioritize automated domain tests for gameplay correctness and add focused device/instrumentation tests for input and lifecycle behavior.
 - **Rationale**: Most risk lies in game-rule correctness (line clears, rotation constraints, lock behavior, game over) and interruption/restart handling.
 - **Alternatives considered**:

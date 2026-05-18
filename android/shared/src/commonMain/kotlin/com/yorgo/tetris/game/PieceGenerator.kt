@@ -31,4 +31,12 @@ class PieceGenerator {
         val type = bag.removeAt(0)
         return Piece(type = type, origin = Point(5, 1))
     }
+
+    /** Remaining spawn order in the current (and partial next) bag. */
+    fun snapshotQueue(): List<PieceType> = bag.toList()
+
+    fun restoreQueue(queue: List<PieceType>) {
+        bag.clear()
+        bag.addAll(queue)
+    }
 }
